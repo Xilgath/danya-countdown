@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>До 05.04</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #00ff41;
+            font-family: 'Press Start 2P', cursive;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Фон с матрицей */
+        .matrix-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.25;
+            pointer-events: none;
+        }
+
+        .countdown-container {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 40px;
+            text-shadow: 
+                0 0 10px #00ff41,
+                0 0 20px #00ff41,
+                0 0 40px #00ff41;
+            letter-spacing: 4px;
+        }
+
+        .countdown {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .time-unit {
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .number {
+            font-size: 4.2rem;
+            font-weight: bold;
+            display: block;
+            text-shadow: 
+                0 0 15px #00ff41,
+                0 0 30px #00ff41,
+                0 0 50px #00ff41;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .label {
+            font-size: 1.1rem;
+            opacity: 0.5;           /* Прозрачность 50% */
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            margin-top: 50px;
+            opacity: 0.85;
+            text-shadow: 0 0 15px #00ff41;
+        }
+
+        /* Адаптив */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .number { font-size: 3.2rem; }
+            .countdown { gap: 25px; }
+            .time-unit { min-width: 90px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas для матрицы -->
+    <canvas class="matrix-bg" id="matrix"></canvas>
+
+    <div class="countdown-container">
+        
+        <div class="countdown" id="countdown">
+            <div class="time-unit">
+                <span class="number" id="days">00</span>
+                <span class="label">ДНЕЙ</span>
+            </div>
+            <div class="time-unit">
+                <span class="number" id="hours">00</span>
+                <span class="label">ЧАСОВ</span>
+            </div>
+            <div class="time-unit">
+                <span class="number" id="minutes">00</span>
+                <span class="label">МИНУТ</span>
+            </div>
+            <div class="time-unit">
+                <span class="number" id="seconds">00</span>
+                <span class="label">СЕКУНД</span>
+            </div>
+        </div>
+
+        <div class="subtitle">Совсем скоро в доту...</div>
+    </div>
+
+    <script>
+        // === Матрица фон ===
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const chars = "0123456789".split('');
+        const fontSize = 14;
+        const drops = Array(Math.floor(canvas.width / fontSize)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.08)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00ff41';
+            ctx.font = `${fontSize}px monospace`;
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 35);
+
+        // === Отсчёт времени ===
+        const targetDate = new Date("2026-04-05T00:00:00").getTime();
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            if (distance < 0) {
+                document.getElementById("countdown").innerHTML = `
+                    <div style="font-size: 3.5rem; color: #00ff41; text-shadow: 0 0 40px #00ff41;">
+                        🎉 УЖЕ НАСТУПИЛО!
+                    </div>`;
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").textContent = String(days).padStart(2, '0');
+            document.getElementById("hours").textContent = String(hours).padStart(2, '0');
+            document.getElementById("minutes").textContent = String(minutes).padStart(2, '0');
+            document.getElementById("seconds").textContent = String(seconds).padStart(2, '0');
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+    </script>
+</body>
+</html>
